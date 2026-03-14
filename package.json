@@ -1,0 +1,43 @@
+{
+  "name": "ai-task-workspace",
+  "version": "0.1.0",
+  "description": "Visual AI task workspace — local-first Electron app",
+  "author": "",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "dist-electron/main/index.js",
+  "dependencies": {
+    "@dnd-kit/core": "^6.1.0",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@anthropic-ai/sdk": "^0.32.1",
+    "better-sqlite3": "^11.6.0",
+    "node-cron": "^3.0.3",
+    "openai": "^4.73.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "electron .",
+    "postinstall": "electron-rebuild -f -w better-sqlite3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.10.1",
+    "@types/node-cron": "^3.0.11",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "electron": "^33.2.0",
+    "electron-rebuild": "^3.2.9",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.4.2",
+    "vite": "^5.4.11",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6"
+  }
+}

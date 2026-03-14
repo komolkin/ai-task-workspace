@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "outDir": "dist-electron/main",
+    "rootDir": "src/main",
+    "declaration": false,
+    "resolveJsonModule": true
+  },
+  "include": ["src/main/**/*.ts"],
+  "exclude": ["node_modules"]
+}
