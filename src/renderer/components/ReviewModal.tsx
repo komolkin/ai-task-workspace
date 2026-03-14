@@ -101,34 +101,6 @@ export function ReviewModal({ taskId, columnId, onClose, onUpdated }: Props) {
     }
   }
 
-  const handleSendToTodo = async () => {
-    if (!window.electronAPI) return
-    setLoading(true)
-    try {
-      await window.electronAPI.reviewSendToTodo(taskId)
-      onUpdated()
-      onClose()
-    } catch (err) {
-      console.error('reviewSendToTodo failed:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleRegenerate = async () => {
-    if (!window.electronAPI) return
-    setLoading(true)
-    try {
-      await window.electronAPI.taskRunRegenerate(taskId)
-      onUpdated()
-      onClose()
-    } catch (err) {
-      console.error('taskRunRegenerate failed:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleRemove = async () => {
     if (!window.electronAPI || !confirm('Remove this task? This cannot be undone.')) return
     setLoading(true)
@@ -244,33 +216,15 @@ export function ReviewModal({ taskId, columnId, onClose, onUpdated }: Props) {
         </div>
         <div className="p-4 flex flex-wrap gap-2">
           {!isDone && (
-            <>
-              <button
-                type="button"
-                onClick={handleApprove}
-                disabled={loading}
-                className="px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-600 rounded hover:bg-neutral-300 dark:hover:bg-neutral-500"
-              >
-                Approve → Done
-              </button>
-              <button
-                type="button"
-                onClick={handleSendToTodo}
-                disabled={loading}
-                className="px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-400 hover:underline"
-              >
-                Send to Inbox
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={handleApprove}
+              disabled={loading}
+              className="px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-600 rounded hover:bg-neutral-300 dark:hover:bg-neutral-500"
+            >
+              Approve → Done
+            </button>
           )}
-          <button
-            type="button"
-            onClick={handleRegenerate}
-            disabled={loading}
-            className="px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-400 hover:underline"
-          >
-            {isDone ? 'Run again' : 'Regenerate'}
-          </button>
           <button
             type="button"
             onClick={handleRemove}

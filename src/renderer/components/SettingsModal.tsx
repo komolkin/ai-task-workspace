@@ -10,7 +10,6 @@ declare global {
 }
 
 const PROVIDERS = [
-  { id: 'mock', name: 'Mock (no API key)' },
   { id: 'openai', name: 'OpenAI' },
   { id: 'anthropic', name: 'Anthropic' },
   { id: 'ollama', name: 'Ollama' },
@@ -22,8 +21,9 @@ type Props = {
 }
 
 export function SettingsModal({ onClose }: Props) {
-  const [provider, setProvider] = useState('mock')
+  const [provider, setProvider] = useState('openai')
   const [defaultModel, setDefaultModel] = useState('')
+  const MASKED_PLACEHOLDER = '••••••••••••••••'
   const [apiKey, setApiKey] = useState('')
   const [hasApiKey, setHasApiKey] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -31,9 +31,10 @@ export function SettingsModal({ onClose }: Props) {
   useEffect(() => {
     window.electronAPI?.settingsGet().then((s) => {
       if (s) {
-        setProvider(s.provider)
+        setProvider(s.provider === 'mock' ? 'openai' : s.provider)
         setDefaultModel(s.defaultModel)
         setHasApiKey(s.hasApiKey)
+        if (s.hasApiKey) setApiKey(MASKED_PLACEHOLDER)
       }
     }).catch((err) => {
       console.error('settingsGet failed:', err)
@@ -44,12 +45,13 @@ export function SettingsModal({ onClose }: Props) {
     if (!window.electronAPI) return
     setLoading(true)
     try {
+      const keyToSave = apiKey && apiKey !== MASKED_PLACEHOLDER ? apiKey : undefined
       await window.electronAPI.settingsSet({
         provider,
         defaultModel: defaultModel || undefined,
-        apiKey: apiKey || undefined,
+        apiKey: keyToSave,
       })
-      if (apiKey) setHasApiKey(true)
+      if (keyToSave) setHasApiKey(true)
       setApiKey('')
       onClose()
     } catch (err) {
@@ -57,6 +59,10 @@ export function SettingsModal({ onClose }: Props) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleApiKeyFocus = () => {
+    if (apiKey === MASKED_PLACEHOLDER) setApiKey('')
   }
 
   return (
@@ -98,25 +104,24 @@ export function SettingsModal({ onClose }: Props) {
               className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400"
             />
           </div>
-          {provider !== 'mock' && (
-            <div>
-              <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">
-                API key {hasApiKey && <span className="text-neutral-400">(set)</span>}
-              </label>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Leave blank to keep existing"
-                className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400"
-              />
-            </div>
-          )}
-          {provider === 'mock' && (
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Mock provider is active. No API key needed.
-            </p>
-          )}
+          <div>
+            <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">
+              API key
+            </label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              onFocus={handleApiKeyFocus}
+              placeholder={hasApiKey ? 'Click to change key' : 'Enter API key'}
+              className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400"
+            />
+            {hasApiKey && (
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                A key is stored. Type a new key only to replace it.
+              </p>
+            )}
+          </div>
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <button

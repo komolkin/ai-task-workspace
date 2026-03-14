@@ -12,13 +12,11 @@ export function CreateTaskForm({ onSubmit }: Props) {
     e.preventDefault()
     const raw = input.trim()
     if (!raw) return
-    const firstNewline = raw.indexOf('\n')
-    const title = firstNewline === -1 ? raw : raw.slice(0, firstNewline).trim()
-    const description = firstNewline === -1 ? undefined : raw.slice(firstNewline + 1).trim() || undefined
-    if (!title) return
     setLoading(true)
     try {
-      await onSubmit({ title, description })
+      const title =
+        (await window.electronAPI?.titleGenerate(raw))?.trim() || raw.split(/\s+/).slice(0, 6).join(' ') || 'Untitled'
+      await onSubmit({ title, description: raw })
       setInput('')
     } finally {
       setLoading(false)
@@ -38,7 +36,7 @@ export function CreateTaskForm({ onSubmit }: Props) {
         }}
         placeholder="Describe task..."
         rows={2}
-        className="w-full px-3 py-2 pr-20 pb-9 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 resize-none"
+        className="w-full px-3 py-2 pr-20 pb-9 text-sm rounded bg-neutral-200/80 dark:bg-neutral-800/80 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400 resize-none"
         disabled={loading}
       />
       <button

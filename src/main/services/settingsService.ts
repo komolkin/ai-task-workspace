@@ -31,7 +31,7 @@ export function get(db: Database.Database): {
   const modelRow = db.prepare('SELECT value FROM settings WHERE key = ?').get('defaultModel') as { value: string } | undefined
   const apiKeyRow = db.prepare('SELECT value FROM settings WHERE key = ?').get('apiKey') as { value: string } | undefined
   return {
-    provider: providerRow?.value ?? 'mock',
+    provider: providerRow?.value ?? 'openai',
     defaultModel: modelRow?.value ?? '',
     hasApiKey: !!(apiKeyRow?.value),
   }

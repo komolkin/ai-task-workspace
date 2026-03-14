@@ -15,7 +15,7 @@ export function getAll(db: Database.Database): ModelUsage[] {
       'SELECT * FROM model_usage ORDER BY lastUsedAt DESC'
     )
     .all() as ModelUsage[]
-  return rows
+  return rows.filter((r) => !r.model.startsWith('Mock'))
 }
 
 export function record(

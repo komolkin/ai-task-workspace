@@ -114,5 +114,6 @@ app.on('activate', () => {
     allWindows[0].focus()
   } else {
     createWindow()
+    if (win) registerIpcHandlers(win)
   }
 })

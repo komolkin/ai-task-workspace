@@ -38,6 +38,16 @@ export function getById(db: Database.Database, id: string): Task | null {
   return row ?? null
 }
 
+export function getByIdWithDraft(db: Database.Database, id: string): Task | null {
+  const row = db.prepare(`
+    SELECT tasks.*, review_drafts.nextStep AS nextStep
+    FROM tasks
+    LEFT JOIN review_drafts ON tasks.id = review_drafts.taskId
+    WHERE tasks.id = ?
+  `).get(id) as Task | undefined
+  return row ?? null
+}
+
 export function remove(db: Database.Database, taskId: string): void {
   db.prepare('DELETE FROM review_drafts WHERE taskId = ?').run(taskId)
   db.prepare('DELETE FROM task_runs WHERE taskId = ?').run(taskId)

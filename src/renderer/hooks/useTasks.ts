@@ -54,12 +54,18 @@ export function useTasks() {
       setRunStages((prev) => ({ ...prev, [taskId]: stage }))
     })
     const unsubTask = electronAPI.onTaskUpdated((payload: unknown) => {
-      if (payload && typeof payload === 'object' && 'id' in payload) {
-        const taskId = (payload as Task).id
+      if (payload && typeof payload === 'object' && 'id' in payload && 'column' in payload) {
+        const task = payload as Task
+        const taskId = task.id
         setRunStages((prev) => {
           const next = { ...prev }
           delete next[taskId]
           return next
+        })
+        setTasks((prev) => {
+          const exists = prev.some((t) => t.id === taskId)
+          if (exists) return prev.map((t) => (t.id === taskId ? { ...t, ...task } : t))
+          return [task, ...prev]
         })
       }
       load()

@@ -11,6 +11,7 @@ const SCHEDULE_PRESETS: { label: string; value: string }[] = [
 declare global {
   interface Window {
     electronAPI?: {
+      titleGenerate: (text: string) => Promise<string>
       automationsCreate: (data: {
         title: string
         instruction: string
@@ -39,34 +40,55 @@ function defaultSchedule() {
 
 export function AutomationModal({ automation, onClose, onSaved }: Props) {
   const isNew = !automation
-  const [title, setTitle] = useState(automation?.title ?? '')
-  const [instruction, setInstruction] = useState(automation?.instruction ?? '')
+  const [describe, setDescribe] = useState(
+    automation ? (automation.instruction || automation.title) : ''
+  )
   const [schedule, setSchedule] = useState(automation?.schedule ?? defaultSchedule())
   const [enabled, setEnabled] = useState(automation?.enabled !== 0)
-  const [outputMode, setOutputMode] = useState<'review' | 'in_progress'>(
-    automation?.outputMode === 'in_progress' ? 'in_progress' : 'review'
-  )
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (automation) {
+      setDescribe(automation.instruction || automation.title)
+      setSchedule(automation.schedule ?? defaultSchedule())
+      setEnabled(automation.enabled !== 0)
+    } else {
+      setDescribe('')
+      setSchedule(defaultSchedule())
+      setEnabled(true)
+    }
+  }, [automation?.id])
 
   const handleSave = async () => {
     if (!window.electronAPI) return
+    const raw = describe.trim()
+    if (!raw) return
     setLoading(true)
     try {
+      let title: string
+      try {
+        title =
+          (await window.electronAPI.titleGenerate(raw))?.trim() ||
+          raw.split(/\s+/).slice(0, 6).join(' ') ||
+          'Untitled'
+      } catch {
+        title = raw.split(/\s+/).slice(0, 6).join(' ') || 'Untitled'
+      }
       if (isNew) {
         await window.electronAPI.automationsCreate({
           title,
-          instruction,
+          instruction: raw,
           schedule,
           enabled,
-          outputMode,
+          outputMode: 'review',
         })
       } else {
         await window.electronAPI.automationsUpdate(automation!.id, {
           title,
-          instruction,
+          instruction: raw,
           schedule,
           enabled,
-          outputMode,
+          outputMode: 'review',
         })
       }
       onSaved()
@@ -107,21 +129,12 @@ export function AutomationModal({ automation, onClose, onSaved }: Props) {
         </h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">Instruction</label>
             <textarea
-              value={instruction}
-              onChange={(e) => setInstruction(e.target.value)}
+              value={describe}
+              onChange={(e) => setDescribe(e.target.value)}
+              placeholder="Describe automation..."
               rows={3}
-              className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100"
+              className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400"
             />
           </div>
           <div>
@@ -150,17 +163,6 @@ export function AutomationModal({ automation, onClose, onSaved }: Props) {
               Enabled
             </label>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">Output</label>
-            <select
-              value={outputMode}
-              onChange={(e) => setOutputMode(e.target.value as 'review' | 'in_progress')}
-              className="select-with-arrow w-full pl-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100"
-            >
-              <option value="review">Create card in To-do</option>
-              <option value="in_progress">Create card in In-progress</option>
-            </select>
-          </div>
         </div>
         <div className="mt-6 flex justify-between">
           <div>
@@ -186,7 +188,7 @@ export function AutomationModal({ automation, onClose, onSaved }: Props) {
             <button
               type="button"
               onClick={handleSave}
-              disabled={loading || !title.trim() || !instruction.trim()}
+              disabled={loading || !describe.trim()}
               className="px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-600 rounded hover:bg-neutral-300 dark:hover:bg-neutral-500 disabled:opacity-50"
             >
               Save

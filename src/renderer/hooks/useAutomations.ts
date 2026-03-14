@@ -17,6 +17,7 @@ declare global {
   interface Window {
     electronAPI?: {
       automationsList: () => Promise<Automation[]>
+      onAutomationsUpdated: (cb: () => void) => () => void
       automationsCreate: (data: {
         title: string
         instruction: string
@@ -48,6 +49,13 @@ export function useAutomations() {
 
   useEffect(() => {
     load()
+  }, [load])
+
+  useEffect(() => {
+    const api = window.electronAPI
+    if (!api?.onAutomationsUpdated) return
+    const unsub = api.onAutomationsUpdated(load)
+    return unsub
   }, [load])
 
   const create = useCallback(

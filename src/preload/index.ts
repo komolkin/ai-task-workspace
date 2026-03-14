@@ -40,6 +40,8 @@ const electronAPI = {
   // Task runs (for regenerate)
   taskRunRegenerate: (taskId: string) => ipcRenderer.invoke('taskRun:regenerate', taskId),
 
+  titleGenerate: (text: string) => ipcRenderer.invoke('title:generate', text),
+
   // Automations
   automationsList: () => ipcRenderer.invoke('automations:list'),
   automationsCreate: (data: {
@@ -60,6 +62,11 @@ const electronAPI = {
     }
   ) => ipcRenderer.invoke('automations:update', id, data),
   automationsDelete: (id: string) => ipcRenderer.invoke('automations:delete', id),
+  onAutomationsUpdated: (cb: () => void) => {
+    const handler = () => cb()
+    ipcRenderer.on('automations:updated', handler)
+    return () => ipcRenderer.removeListener('automations:updated', handler)
+  },
 
   // Model usage
   modelUsageGetAll: () => ipcRenderer.invoke('modelUsage:getAll'),

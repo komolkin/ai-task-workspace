@@ -6,14 +6,23 @@ import * as reviewDraftService from '../services/reviewDraftService'
 import * as modelUsageService from '../services/modelUsageService'
 import * as settingsService from '../services/settingsService'
 import { runPipelineForTask } from '../services/pipeline'
+import * as titleService from '../services/titleService'
 
 export function registerIpcHandlers(win: BrowserWindow) {
   const db = getDb()
-  const send = (channel: string, ...args: unknown[]) => win.webContents.send(channel, ...args)
+  const send = (channel: string, ...args: unknown[]) => {
+    if (win.isDestroyed()) return
+    try {
+      win.webContents.send(channel, ...args)
+    } catch (e) {
+      console.error('[ipc] send failed:', channel, e)
+    }
+  }
   automationService.initScheduler(db, (task) => {
-  send('task:updated', task)
-  send('modelUsage:updated')
-})
+    send('task:updated', task)
+    send('modelUsage:updated')
+    send('automations:updated')
+  })
 
   ipcMain.handle('tasks:getAll', () => taskService.getAll(db))
   ipcMain.handle('tasks:create', (_, data: { title: string; description?: string }) =>
@@ -64,6 +73,12 @@ export function registerIpcHandlers(win: BrowserWindow) {
   ipcMain.handle('automations:delete', (_, id: string) =>
     automationService.remove(db, id)
   )
+
+  ipcMain.handle('title:generate', async (_, text: string) => {
+    const title = await titleService.generateTitle(db, text)
+    send('modelUsage:updated')
+    return title
+  })
 
   ipcMain.handle('modelUsage:getAll', () => modelUsageService.getAll(db))
   ipcMain.handle('settings:get', () => settingsService.get(db))
