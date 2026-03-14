@@ -27,8 +27,8 @@ export function registerIpcHandlers(win: BrowserWindow) {
     send('task:updated', null)
   })
 
-  ipcMain.handle('task:moveToInProgress', async (_, taskId: string) => {
-    await taskService.moveToInProgress(db, taskId, (stage) => send('taskRun:stage', { taskId, stage }), (task) => send('task:updated', task), () => send('modelUsage:updated'))
+  ipcMain.handle('task:moveToInProgress', async (_, taskId: string, inPlace?: boolean) => {
+    await taskService.moveToInProgress(db, taskId, (stage) => send('taskRun:stage', { taskId, stage }), (task) => send('task:updated', task), () => send('modelUsage:updated'), inPlace)
   })
   ipcMain.handle('task:retry', async (_, taskId: string) => {
     await taskService.retry(db, taskId, (stage) => send('taskRun:stage', { taskId, stage }), (task) => send('task:updated', task), () => send('modelUsage:updated'))

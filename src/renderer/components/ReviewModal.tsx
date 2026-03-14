@@ -37,21 +37,42 @@ export function ReviewModal({ taskId, columnId, onClose, onUpdated }: Props) {
     checklist: string
     editedDetails: string | null
   } | null>(null)
+  const [draftFetched, setDraftFetched] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editedDetails, setEditedDetails] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    window.electronAPI?.reviewDraftsGetByTaskId(taskId).then(setDraft).catch((err) => {
-      console.error('reviewDraftsGetByTaskId failed:', err)
-    })
+    setDraftFetched(false)
+    window.electronAPI?.reviewDraftsGetByTaskId(taskId)
+      .then((d) => {
+        setDraft(d)
+        setDraftFetched(true)
+      })
+      .catch((err) => {
+        console.error('reviewDraftsGetByTaskId failed:', err)
+        setDraftFetched(true)
+      })
   }, [taskId])
+
+  if (!draftFetched) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
+        <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
+          <p className="text-neutral-500">Loading…</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!draft) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
         <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
-          <p className="text-neutral-500">Loading…</p>
+          <p className="text-neutral-500">No review content yet.</p>
+          <button type="button" onClick={onClose} className="mt-4 text-sm text-neutral-600 dark:text-neutral-400 hover:underline">
+            Close
+          </button>
         </div>
       </div>
     )

@@ -8,10 +8,16 @@ export type Task = {
   status: string
   createdAt: number
   updatedAt: number
+  nextStep?: string | null
 }
 
 export function getAll(db: Database.Database): Task[] {
-  const rows = db.prepare('SELECT * FROM tasks ORDER BY updatedAt DESC').all() as Task[]
+  const rows = db.prepare(`
+    SELECT tasks.*, review_drafts.nextStep AS nextStep
+    FROM tasks
+    LEFT JOIN review_drafts ON tasks.id = review_drafts.taskId
+    ORDER BY tasks.updatedAt DESC
+  `).all() as Task[]
   return rows
 }
 
@@ -49,13 +55,16 @@ export async function moveToInProgress(
   taskId: string,
   onStage: (stage: string) => void,
   onTaskUpdated: (task: Task) => void,
-  onUsageRecorded?: () => void
+  onUsageRecorded?: () => void,
+  inPlace?: boolean
 ): Promise<void> {
   const { runPipelineForTask } = await import('./pipeline')
-  const now = Date.now()
-  db.prepare('UPDATE tasks SET "column" = ?, updatedAt = ? WHERE id = ?').run('in_progress', now, taskId)
-  const taskInProgress = getById(db, taskId)
-  if (taskInProgress) onTaskUpdated(taskInProgress)
+  if (!inPlace) {
+    const now = Date.now()
+    db.prepare('UPDATE tasks SET "column" = ?, updatedAt = ? WHERE id = ?').run('in_progress', now, taskId)
+    const taskInProgress = getById(db, taskId)
+    if (taskInProgress) onTaskUpdated(taskInProgress)
+  }
   onStage('Understanding task')
   try {
     await runPipelineForTask(db, taskId, onStage, (task) => {

@@ -41,7 +41,7 @@ export function approve(db: Database.Database, taskId: string): unknown {
 
 export function sendToTodo(db: Database.Database, taskId: string): unknown {
   const now = Date.now()
-  db.prepare('UPDATE tasks SET "column" = ?, updatedAt = ? WHERE id = ?').run('todo', now, taskId)
+  db.prepare('UPDATE tasks SET "column" = ?, updatedAt = ? WHERE id = ?').run('review', now, taskId)
   db.prepare('DELETE FROM review_drafts WHERE taskId = ?').run(taskId)
   return { ok: true }
 }

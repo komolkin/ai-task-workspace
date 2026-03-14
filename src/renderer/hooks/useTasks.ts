@@ -8,6 +8,7 @@ export type Task = {
   status: string
   createdAt: number
   updatedAt: number
+  nextStep?: string | null
 }
 
 export type RunStage = { taskId: string; stage: string }
@@ -52,7 +53,15 @@ export function useTasks() {
     const unsubStage = electronAPI.onTaskRunStage(({ taskId, stage }) => {
       setRunStages((prev) => ({ ...prev, [taskId]: stage }))
     })
-    const unsubTask = electronAPI.onTaskUpdated(() => {
+    const unsubTask = electronAPI.onTaskUpdated((payload: unknown) => {
+      if (payload && typeof payload === 'object' && 'id' in payload) {
+        const taskId = (payload as Task).id
+        setRunStages((prev) => {
+          const next = { ...prev }
+          delete next[taskId]
+          return next
+        })
+      }
       load()
     })
     return () => {
@@ -69,26 +78,28 @@ export function useTasks() {
   }, [])
 
   const createTask = useCallback(
-    async (data: { title: string; description?: string }) => {
+    async (data: { title: string; description?: string }): Promise<Task | undefined> => {
       const api = window.electronAPI
-      if (!api) return
+      if (!api) return undefined
       try {
-        await api.tasksCreate(data)
+        const task = await api.tasksCreate(data)
         await load()
+        return task
       } catch (err) {
         console.error('tasksCreate failed:', err)
+        return undefined
       }
     },
     [load]
   )
 
   const moveTask = useCallback(
-    async (taskId: string, column: string) => {
+    async (taskId: string, column: string, options?: { inPlace?: boolean }) => {
       const api = window.electronAPI
       if (!api) return
       try {
-        if (column === 'in_progress') {
-          await api.taskMoveToInProgress(taskId)
+        if (column === 'in_progress' && options?.inPlace) {
+          await api.taskMoveToInProgress(taskId, true)
         } else {
           await api.tasksUpdateColumn(taskId, column)
         }

@@ -27,7 +27,7 @@ export function create(
     instruction: string
     schedule: string
     enabled: boolean
-    outputMode: 'review' | 'todo'
+    outputMode: 'review' | 'in_progress'
   }
 ): Automation {
   const id = crypto.randomUUID()
@@ -59,7 +59,7 @@ export function update(
     instruction?: string
     schedule?: string
     enabled?: boolean
-    outputMode?: 'review' | 'todo'
+    outputMode?: 'review' | 'in_progress'
   }
 ): Automation | null {
   const row = db.prepare('SELECT * FROM automations WHERE id = ?').get(id) as Automation | undefined

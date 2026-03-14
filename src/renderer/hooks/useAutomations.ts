@@ -22,11 +22,11 @@ declare global {
         instruction: string
         schedule: string
         enabled: boolean
-        outputMode: 'review' | 'todo'
+        outputMode: 'review' | 'in_progress'
       }) => Promise<Automation>
       automationsUpdate: (
         id: string,
-        data: { title?: string; instruction?: string; schedule?: string; enabled?: boolean; outputMode?: 'review' | 'todo' }
+        data: { title?: string; instruction?: string; schedule?: string; enabled?: boolean; outputMode?: 'review' | 'in_progress' }
       ) => Promise<Automation | null>
       automationsDelete: (id: string) => Promise<void>
     }

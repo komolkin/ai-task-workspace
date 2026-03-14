@@ -16,11 +16,11 @@ declare global {
         instruction: string
         schedule: string
         enabled: boolean
-        outputMode: 'review' | 'todo'
+        outputMode: 'review' | 'in_progress'
       }) => Promise<Automation>
       automationsUpdate: (
         id: string,
-        data: { title?: string; instruction?: string; schedule?: string; enabled?: boolean; outputMode?: 'review' | 'todo' }
+        data: { title?: string; instruction?: string; schedule?: string; enabled?: boolean; outputMode?: 'review' | 'in_progress' }
       ) => Promise<Automation | null>
       automationsDelete: (id: string) => Promise<void>
     }
@@ -43,7 +43,9 @@ export function AutomationModal({ automation, onClose, onSaved }: Props) {
   const [instruction, setInstruction] = useState(automation?.instruction ?? '')
   const [schedule, setSchedule] = useState(automation?.schedule ?? defaultSchedule())
   const [enabled, setEnabled] = useState(automation?.enabled !== 0)
-  const [outputMode, setOutputMode] = useState<'review' | 'todo'>(automation?.outputMode === 'todo' ? 'todo' : 'review')
+  const [outputMode, setOutputMode] = useState<'review' | 'in_progress'>(
+    automation?.outputMode === 'in_progress' ? 'in_progress' : 'review'
+  )
   const [loading, setLoading] = useState(false)
 
   const handleSave = async () => {
@@ -127,7 +129,7 @@ export function AutomationModal({ automation, onClose, onSaved }: Props) {
             <select
               value={schedule}
               onChange={(e) => setSchedule(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100"
+              className="select-with-arrow w-full pl-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100"
             >
               {SCHEDULE_PRESETS.map((p) => (
                 <option key={p.value} value={p.value}>
@@ -152,11 +154,11 @@ export function AutomationModal({ automation, onClose, onSaved }: Props) {
             <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">Output</label>
             <select
               value={outputMode}
-              onChange={(e) => setOutputMode(e.target.value as 'review' | 'todo')}
-              className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100"
+              onChange={(e) => setOutputMode(e.target.value as 'review' | 'in_progress')}
+              className="select-with-arrow w-full pl-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100"
             >
               <option value="review">Create card in To-do</option>
-              <option value="todo">Create card in Inbox</option>
+              <option value="in_progress">Create card in In-progress</option>
             </select>
           </div>
         </div>

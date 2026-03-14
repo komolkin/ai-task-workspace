@@ -14,8 +14,8 @@ const electronAPI = {
     ipcRenderer.invoke('tasks:create', data),
   tasksUpdateColumn: (taskId: string, column: string) =>
     ipcRenderer.invoke('tasks:updateColumn', taskId, column),
-  taskMoveToInProgress: (taskId: string) =>
-    ipcRenderer.invoke('task:moveToInProgress', taskId),
+  taskMoveToInProgress: (taskId: string, inPlace?: boolean) =>
+    ipcRenderer.invoke('task:moveToInProgress', taskId, inPlace),
   taskRetry: (taskId: string) => ipcRenderer.invoke('task:retry', taskId),
   taskRemove: (taskId: string) => ipcRenderer.invoke('task:remove', taskId),
   onTaskRunStage: (cb: (data: { taskId: string; stage: string }) => void) => {

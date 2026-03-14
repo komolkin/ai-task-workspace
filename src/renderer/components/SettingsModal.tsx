@@ -77,7 +77,7 @@ export function SettingsModal({ onClose }: Props) {
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100"
+              className="select-with-arrow w-full pl-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100"
             >
               {PROVIDERS.map((p) => (
                 <option key={p.id} value={p.id}>

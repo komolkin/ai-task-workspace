@@ -105,7 +105,7 @@ export async function runPipelineForAutomation(db: Database.Database, automation
     taskId,
     row.title,
     output.summary,
-    row.outputMode === 'todo' ? 'todo' : 'review',
+    row.outputMode === 'in_progress' ? 'in_progress' : 'review',
     'active',
     now,
     now

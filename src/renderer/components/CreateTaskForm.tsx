@@ -5,46 +5,46 @@ type Props = {
 }
 
 export function CreateTaskForm({ onSubmit }: Props) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const t = title.trim()
-    if (!t) return
+    const raw = input.trim()
+    if (!raw) return
+    const firstNewline = raw.indexOf('\n')
+    const title = firstNewline === -1 ? raw : raw.slice(0, firstNewline).trim()
+    const description = firstNewline === -1 ? undefined : raw.slice(firstNewline + 1).trim() || undefined
+    if (!title) return
     setLoading(true)
     try {
-      await onSubmit({ title: t, description: description.trim() || undefined })
-      setTitle('')
-      setDescription('')
+      await onSubmit({ title, description })
+      setInput('')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Task title"
-        className="w-full px-3 py-2 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400"
-        disabled={loading}
-      />
-      <input
-        type="text"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Description (optional)"
-        className="w-full px-3 py-1.5 text-xs rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-700 dark:text-neutral-300 placeholder-neutral-400"
+    <form onSubmit={handleSubmit} className="relative">
+      <textarea
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault()
+            handleSubmit(e as unknown as React.FormEvent)
+          }
+        }}
+        placeholder="Describe task..."
+        rows={2}
+        className="w-full px-3 py-2 pr-20 pb-9 text-sm rounded bg-neutral-100 dark:bg-neutral-700/80 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 resize-none"
         disabled={loading}
       />
       <button
         type="submit"
-        disabled={loading || !title.trim()}
-        className="w-full py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 disabled:opacity-50"
+        disabled={loading || !input.trim()}
+        className="absolute bottom-2 right-2 py-1.5 px-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 disabled:opacity-50 cursor-pointer"
       >
         {loading ? 'Adding…' : 'Add task'}
       </button>

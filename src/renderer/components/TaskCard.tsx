@@ -7,6 +7,7 @@ import { ReviewModal } from './ReviewModal'
 type Props = {
   task: Task
   columnId: string
+  onProcess?: () => void
 }
 
 function formatTime(ts: number) {
@@ -19,7 +20,7 @@ function formatTime(ts: number) {
   return d.toLocaleDateString()
 }
 
-export function TaskCard({ task, columnId }: Props) {
+export function TaskCard({ task, columnId, onProcess }: Props) {
   const [reviewOpen, setReviewOpen] = useState(false)
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `task-${task.id}`,
@@ -29,13 +30,18 @@ export function TaskCard({ task, columnId }: Props) {
     ? { transform: CSS.Translate.toString(transform) }
     : undefined
 
-  const preview = task.description
-    ? task.description.slice(0, 60) + (task.description.length > 60 ? '…' : '')
-    : ''
-
   const isReview = columnId === 'review'
   const isDone = columnId === 'done'
-  const canOpen = isReview || isDone
+  const isInProgress = columnId === 'in_progress'
+  const canOpen = isReview || isDone || isInProgress
+
+  const subtitleText =
+    (isReview || isInProgress) && task.nextStep
+      ? task.nextStep
+      : task.description ?? ''
+  const preview = subtitleText
+    ? subtitleText.slice(0, 60) + (subtitleText.length > 60 ? '…' : '')
+    : ''
 
   return (
     <>
@@ -49,7 +55,7 @@ export function TaskCard({ task, columnId }: Props) {
           rounded px-3 py-2 cursor-grab active:cursor-grabbing
           bg-white dark:bg-neutral-800
           hover:bg-neutral-50 dark:hover:bg-neutral-700/80
-          ${isDragging ? 'opacity-40' : ''}
+          ${isDragging ? 'invisible' : ''}
           ${canOpen ? 'cursor-pointer' : ''}
         `}
       >
@@ -61,9 +67,23 @@ export function TaskCard({ task, columnId }: Props) {
             {preview}
           </div>
         )}
-        <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-          {formatTime(task.updatedAt)}
-          {isDone && ' · Done'}
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <span className="text-xs text-neutral-400 dark:text-neutral-500">
+            {formatTime(task.updatedAt)}
+            {isDone && ' · Done'}
+          </span>
+          {onProcess && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onProcess()
+              }}
+              className="text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+            >
+              Process
+            </button>
+          )}
         </div>
       </div>
       {reviewOpen && (

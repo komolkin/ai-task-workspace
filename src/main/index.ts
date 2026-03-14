@@ -23,13 +23,15 @@ if (!app.requestSingleInstanceLock()) {
   process.exit(0)
 }
 
+app.setName('Workspace')
+
 let win: BrowserWindow | null = null
 const preloadPath = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'AI Task Workspace',
+    title: 'Workspace',
     width: 1200,
     height: 800,
     webPreferences: {
